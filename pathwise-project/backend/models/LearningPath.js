@@ -4,6 +4,8 @@ const pathModuleSchema = new mongoose.Schema({
   moduleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Module', required: true },
   name: { type: String, required: true },
   adjustedHours: { type: Number, required: true },
+  allocatedHours: { type: Number },
+  completion: { type: Number },
   complexityWeight: { type: Number },
   weekStart: { type: Number, required: true },
   weekEnd: { type: Number, required: true },
@@ -20,6 +22,8 @@ const learningPathSchema = new mongoose.Schema({
   deadlineWeeks: { type: Number },
   totalWeeks: { type: Number, required: true },
   totalHours: { type: Number, required: true },
+  totalRequiredHours: { type: Number },
+  totalAvailableHours: { type: Number },
   isOverloaded: { type: Boolean, default: false },
   modules: [pathModuleSchema],
   generatedAt: { type: Date, default: Date.now }

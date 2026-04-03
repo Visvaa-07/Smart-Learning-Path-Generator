@@ -11,9 +11,20 @@ export default function ModuleCard({ module, index, onToggleComplete }) {
 
   const platform = PLATFORM_META[module.resource?.platform] || { icon: '🔗', color: '#4f8ef7', label: 'Resource' }
 
-  const statusClass = module.completed
-    ? styles.statusDone
-    : styles.statusPending
+  const systemCompletion = typeof module.completion === 'number' ? module.completion : 100
+  let sysStatusText = '⏳ Pending'
+  let statusClass = styles.statusPending
+  
+  if (module.completed) {
+    sysStatusText = '✅ Done'
+    statusClass = styles.statusDone
+  } else if (systemCompletion < 100 && systemCompletion >= 70) {
+    sysStatusText = 'In Progress'
+    statusClass = styles.statusWarning
+  } else if (systemCompletion < 70) {
+    sysStatusText = 'At Risk'
+    statusClass = styles.statusRisk
+  }
 
   return (
     <div className={`${styles.card} ${module.completed ? styles.cardDone : ''}`}>
@@ -29,16 +40,16 @@ export default function ModuleCard({ module, index, onToggleComplete }) {
           <div className={styles.titleBlock}>
             <h3 className={styles.moduleTitle}>{module.name}</h3>
             <div className={styles.metaRow}>
-              <span className={styles.metaChip}>⏱ {module.adjustedHours} hrs</span>
+              <span className={styles.metaChip}>⏱ {module.allocatedHours ?? module.adjustedHours} hrs</span>
               <span className={styles.metaChip}>
-                📅 Week {module.weekStart}–{module.weekEnd}
+                📅 Week {module.weekStart === module.weekEnd ? module.weekStart : `${module.weekStart}–${module.weekEnd}`}
               </span>
               <span className={styles.metaChip}>⚖️ ×{module.complexityWeight?.toFixed(1)}</span>
             </div>
           </div>
           <div className={styles.rightCol}>
             <span className={`${styles.statusBadge} ${statusClass}`}>
-              {module.completed ? '✅ Done' : '⏳ Pending'}
+              {sysStatusText}
             </span>
             <button
               className={styles.expandBtn}

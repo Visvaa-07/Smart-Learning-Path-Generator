@@ -39,6 +39,11 @@ export default function WeeklyTable({ modules }) {
                         <div key={m._id || m.moduleId || m.name} className={`${styles.modChip} ${m.completed ? styles.modChipDone : ''}`}>
                           <span className={styles.modName}>{m.name}</span>
                           <span className={styles.modHrs}>{m.adjustedHours}h</span>
+                          {m.weekStart !== m.weekEnd && (
+                            <span style={{ fontSize: '0.75rem', opacity: 0.8, marginLeft: '4px' }}>
+                              (W{m.weekStart}–{m.weekEnd})
+                            </span>
+                          )}
                         </div>
                       ))}
                     </div>

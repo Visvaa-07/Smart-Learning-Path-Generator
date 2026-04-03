@@ -57,8 +57,19 @@ export default function Dashboard() {
 
   const completedCount = path?.modules?.filter(m => m.completed).length || 0
   const totalModules = path?.modules?.length || 0
-  const totalHours = path?.modules?.reduce((sum, m) => sum + m.adjustedHours, 0) || 0
-  const completedHours = path?.modules?.filter(m => m.completed).reduce((sum, m) => sum + m.adjustedHours, 0) || 0
+  const totalHours = path?.modules?.reduce((sum, m) => sum + (m.allocatedHours ?? m.adjustedHours), 0) || 0
+  const completedHours = path?.modules?.filter(m => m.completed).reduce((sum, m) => sum + (m.allocatedHours ?? m.adjustedHours), 0) || 0
+
+  const totalRequiredHours = path?.totalRequiredHours || totalHours
+  const totalAvailableHours = path?.totalAvailableHours || (path?.deadlineWeeks ? path.deadlineWeeks * path.hoursPerWeek : totalHours)
+  const isOverloaded = path?.isOverloaded || false
+
+  const deficit = isOverloaded ? totalRequiredHours - totalAvailableHours : 0
+  const completionPercent = totalRequiredHours > 0 ? ((totalAvailableHours / totalRequiredHours) * 100).toFixed(0) : 100
+  const workloadPercent = totalAvailableHours > 0 ? ((totalRequiredHours / totalAvailableHours) * 100).toFixed(0) : 100
+
+  const requiredWeekly = path?.deadlineWeeks ? Math.ceil(totalRequiredHours / path.deadlineWeeks) : 0
+  const requiredWeeks = path?.hoursPerWeek ? Math.ceil(totalRequiredHours / path.hoursPerWeek) : 0
 
   const chartData = path?.modules?.map(m => ({
     name: m.name.length > 14 ? m.name.slice(0, 14) + '…' : m.name,
@@ -130,6 +141,31 @@ export default function Dashboard() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Feasibility Summary Section */}
+        <div className={styles.feasibilityContainer}>
+          <div className={styles.feasibilityStatsCard}>
+            <div className={styles.fsItem}>Total Work: <strong>{totalRequiredHours} hrs</strong></div>
+            <div className={styles.fsItem}>Available Time: <strong>{totalAvailableHours} hrs</strong></div>
+            <div className={styles.fsItem}>Feasible Scope: <strong>~{completionPercent}%</strong></div>
+            <div className={styles.fsItem}>Est. Workload: <strong>{workloadPercent}%</strong></div>
+          </div>
+
+          {isOverloaded && (
+            <div className={styles.advisoryAlert}>
+              <div className={styles.advisoryWarning}>
+                <strong>⚠️ You are short by {deficit} hrs</strong>
+                <p>Timeline only naturally fits ~{completionPercent}% of the curriculum</p>
+                <p>You're operating at an {workloadPercent}% workload capacity</p>
+              </div>
+              <div className={styles.advisorySuggestions}>
+                <strong>To complete everything:</strong>
+                <p>• Study {requiredWeekly} hrs/week</p>
+                <p>• OR extend to {requiredWeeks} weeks</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Progress + Deadline */}

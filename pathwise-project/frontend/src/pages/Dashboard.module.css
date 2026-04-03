@@ -370,3 +370,93 @@
   color: var(--accent2);
   white-space: nowrap;
 }
+
+/* ── Advisory Dashboard Styles ── */
+.feasibilityContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.feasibilityStatsCard {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 24px;
+  gap: 32px;
+  box-shadow: var(--shadow-sm);
+  flex-wrap: wrap;
+}
+
+.fsItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: var(--text2);
+}
+
+.fsItem strong {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-display);
+}
+
+.advisoryAlert {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  background: rgba(248, 113, 113, 0.04);
+  border: 1px solid rgba(248, 113, 113, 0.25);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+}
+
+@media (max-width: 768px) {
+  .advisoryAlert {
+    grid-template-columns: 1fr;
+  }
+}
+
+.advisoryWarning {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.advisoryWarning strong {
+  font-size: 1.15rem;
+  color: var(--danger);
+  margin-bottom: 4px;
+}
+
+.advisoryWarning p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.advisorySuggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--surface);
+  padding: 16px 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.advisorySuggestions strong {
+  font-size: 1rem;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+
+.advisorySuggestions p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text2);
+}

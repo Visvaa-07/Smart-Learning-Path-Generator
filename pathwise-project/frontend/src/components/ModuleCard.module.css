@@ -229,3 +229,15 @@
   border-color: rgba(248,113,113,0.3);
   color: var(--danger);
 }
+
+.statusWarning {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--gold);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.statusRisk {
+  background: rgba(248, 113, 113, 0.1);
+  color: var(--danger);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+}
