@@ -1,0 +1,122 @@
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg3);
+}
+
+.weekCol { width: 80px; }
+.modulesCol { }
+.statusCol { width: 140px; }
+
+.row {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+
+.row:last-child { border-bottom: none; }
+.row:hover { background: var(--surface2); }
+.rowDone { background: rgba(52,211,153,0.03); }
+.rowPartial { background: rgba(79,142,247,0.03); }
+
+.weekCell { padding: 14px 16px; }
+
+.weekBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text2);
+}
+
+.modulesCell {
+  padding: 12px 16px;
+}
+
+.modList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.modChip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px 10px;
+  transition: border-color 0.2s;
+}
+
+.modChipDone {
+  border-color: rgba(52,211,153,0.25);
+  background: rgba(52,211,153,0.05);
+}
+
+.modName {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.modHrs {
+  font-size: 0.72rem;
+  color: var(--text3);
+  background: var(--surface2);
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+
+.none { color: var(--text3); font-size: 0.85rem; }
+
+.statusCell { padding: 12px 16px; }
+
+.statusDone, .statusPartial, .statusPending, .statusEmpty {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.statusDone {
+  color: var(--success);
+  background: rgba(52,211,153,0.1);
+}
+
+.statusPartial {
+  color: var(--accent);
+  background: rgba(79,142,247,0.1);
+}
+
+.statusPending {
+  color: var(--text3);
+  background: var(--surface2);
+}
+
+.statusEmpty { color: var(--text3); background: none; }
