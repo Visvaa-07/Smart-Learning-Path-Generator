@@ -59,4 +59,10 @@ router.get('/me', protect, async (req, res) => {
   res.json(req.user)
 })
 
+// @route   GET /api/auth/verify
+// @desc    Verify token and return user
+router.get('/verify', protect, async (req, res) => {
+  res.json({ user: req.user })
+})
+
 module.exports = router

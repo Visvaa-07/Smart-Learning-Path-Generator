@@ -3,13 +3,13 @@ const router = express.Router()
 const { protect } = require('../middleware/authMiddleware')
 const LearningPath = require('../models/LearningPath')
 
-// @route   PUT /api/progress/:moduleId
-// @desc    Update completion status of a module in the user's current path
-router.put('/:moduleId', protect, async (req, res) => {
+// @route   PUT /api/progress/:pathId/:moduleId
+// @desc    Update completion status of a module in a specific path
+router.put('/:pathId/:moduleId', protect, async (req, res) => {
   const { completed } = req.body
 
   try {
-    const path = await LearningPath.findOne({ user: req.user._id })
+    const path = await LearningPath.findOne({ _id: req.params.pathId, user: req.user._id })
     if (!path) {
       return res.status(404).json({ message: 'Learning path not found' })
     }
@@ -19,7 +19,7 @@ router.put('/:moduleId', protect, async (req, res) => {
     )
 
     if (modIndex === -1) {
-      return res.status(404).json({ message: 'Module not found in this path: ' + req.params.moduleId })
+      return res.status(404).json({ message: 'Module not found in this path' })
     }
 
     path.modules[modIndex].completed = completed

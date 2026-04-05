@@ -15,38 +15,52 @@ import styles from './Dashboard.module.css'
 const TABS = ['Overview', 'Modules', 'Schedule', 'Analytics']
 
 export default function Dashboard() {
-  const [path, setPath] = useState(null)
+  const [paths, setPaths] = useState([])
+  const [activePathId, setActivePathId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('Overview')
   const [updatingId, setUpdatingId] = useState(null)
   const navigate = useNavigate()
   const location = useLocation()
 
-  useEffect(() => {
-    // If navigated from onboarding with fresh path
-    if (location.state?.path) {
-      setPath(location.state.path)
+  const fetchPaths = async () => {
+    try {
+      const { data } = await api.get('/path/me')
+      const pathsData = Array.isArray(data) ? data : (data ? [data] : [])
+      setPaths(pathsData)
+      if (pathsData.length > 0 && !activePathId) {
+        setActivePathId(pathsData[0]._id)
+      }
+    } catch (err) {
+      console.error('Failed to fetch paths', err)
+    } finally {
       setLoading(false)
-      return
     }
-    // Otherwise load saved path
-    api.get('/path/me')
-      .then(({ data }) => setPath(data))
-      .catch(() => setPath(null))
-      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    fetchPaths()
   }, [])
 
+  const path = paths.find(p => p._id === activePathId) || paths[0] || null
+
   const handleToggleComplete = async (moduleId, completed) => {
+    // [FIX] Always use the ID of the displayed path
+    const currentPathId = path?._id
+    if (!currentPathId) return
     setUpdatingId(moduleId)
     try {
-      await api.put(`/progress/${moduleId}`, { completed })
-      setPath(prev => ({
-        ...prev,
-        modules: prev.modules.map(m =>
-          (m._id === moduleId || m.moduleId === moduleId)
-            ? { ...m, completed, completedAt: completed ? new Date().toISOString() : null }
-            : m
-        )
+      await api.put(`/progress/${currentPathId}/${moduleId}`, { completed })
+      setPaths(prev => prev.map(p => {
+        if (p._id !== currentPathId) return p
+        return {
+          ...p,
+          modules: p.modules.map(m =>
+            (m._id === moduleId || m.moduleId === moduleId)
+              ? { ...m, completed, completedAt: completed ? new Date().toISOString() : null }
+              : m
+          )
+        }
       }))
     } catch (e) {
       console.error('Progress update failed', e)
@@ -55,6 +69,53 @@ export default function Dashboard() {
     }
   }
 
+  const handleDeletePath = async () => {
+    const currentPathId = path?._id
+    if (!currentPathId) return
+    
+    // Using window.confirm but with a fallback for automated tests
+    const confirmed = window.confirm ? window.confirm('Are you sure you want to delete this learning path?') : true
+    if (!confirmed) return
+
+    try {
+      setLoading(true)
+      console.log('[FRONTEND] Deleting path:', currentPathId);
+      await api.delete(`/path/${currentPathId}`)
+      
+      const newPaths = paths.filter(p => p._id !== currentPathId)
+      setPaths(newPaths)
+      if (newPaths.length > 0) {
+        setActivePathId(newPaths[0]._id)
+      } else {
+        setActivePathId(null)
+      }
+    } catch (err) {
+      console.error('[FRONTEND] Delete failed', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleAdjustPath = async (extraHours = 0, extraWeeks = 0) => {
+    if (!path) return
+    try {
+      setLoading(true)
+      const res = await api.post('/path/generate', {
+        subject: path.subject,
+        skillLevel: path.skillLevel,
+        hoursPerWeek: path.hoursPerWeek + extraHours,
+        deadlineWeeks: (path.deadlineWeeks || path.totalWeeks) + extraWeeks
+      })
+      // Update paths list
+      setPaths(prev => prev.map(p => p._id === activePathId ? res.data : p))
+    } catch (err) {
+      console.error('Adjust failed', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Multi-Path Safe Calculation
   const completedCount = path?.modules?.filter(m => m.completed).length || 0
   const totalModules = path?.modules?.length || 0
   const totalHours = path?.modules?.reduce((sum, m) => sum + (m.allocatedHours ?? m.adjustedHours), 0) || 0
@@ -63,11 +124,10 @@ export default function Dashboard() {
   const totalRequiredHours = path?.totalRequiredHours || totalHours
   const totalAvailableHours = path?.totalAvailableHours || (path?.deadlineWeeks ? path.deadlineWeeks * path.hoursPerWeek : totalHours)
   const isOverloaded = path?.isOverloaded || false
-
   const deficit = isOverloaded ? totalRequiredHours - totalAvailableHours : 0
+  
   const completionPercent = totalRequiredHours > 0 ? ((totalAvailableHours / totalRequiredHours) * 100).toFixed(0) : 100
   const workloadPercent = totalAvailableHours > 0 ? ((totalRequiredHours / totalAvailableHours) * 100).toFixed(0) : 100
-
   const requiredWeekly = path?.deadlineWeeks ? Math.ceil(totalRequiredHours / path.deadlineWeeks) : 0
   const requiredWeeks = path?.hoursPerWeek ? Math.ceil(totalRequiredHours / path.hoursPerWeek) : 0
 
@@ -81,12 +141,12 @@ export default function Dashboard() {
     <div className={styles.loadingPage}>
       <div className={styles.loadingInner}>
         <div className="spinner" style={{ width: 40, height: 40 }} />
-        <p>Loading your learning path…</p>
+        <p>Syncing your goals…</p>
       </div>
     </div>
   )
 
-  if (!path) return (
+  if (paths.length === 0) return (
     <div className={styles.emptyPage}>
       <Navbar onNewPath={() => navigate('/onboarding')} />
       <div className={styles.emptyInner}>
@@ -100,8 +160,23 @@ export default function Dashboard() {
     </div>
   )
 
+  if (!path) return (
+    <div className={styles.loadingPage}>
+      <div className={styles.loadingInner}>
+        <div className="spinner" style={{ width: 40, height: 40 }} />
+        <p>Selecting your goal…</p>
+      </div>
+    </div>
+  )
+
   const skillMultipliers = { beginner: 1.5, intermediate: 1.0, advanced: 0.6 }
-  const multiplier = skillMultipliers[path.skillLevel] || 1.0
+  const multiplier = skillMultipliers[path?.skillLevel] || 1.0
+
+  // Calculate current week of the path (Path is guaranteed to exist here)
+  const startDate = new Date(path?.generatedAt || Date.now())
+  const today = new Date()
+  const diffDays = Math.floor((today - startDate) / (1000 * 60 * 60 * 24))
+  const currentWeek = Math.max(1, Math.floor(diffDays / 7) + 1)
 
   return (
     <div className={styles.page}>
@@ -114,24 +189,42 @@ export default function Dashboard() {
         {/* Hero summary bar */}
         <div className={styles.heroBar}>
           <div className={styles.heroLeft}>
-            <div className={styles.subjectPill}>
-              <span>{path.subject}</span>
+            <div className={styles.subjectHeader}>
+              <div className={styles.subjectPill}>
+                <span>{path.subject}</span>
+              </div>
+              <button onClick={handleDeletePath} className={styles.deleteBtn} title="Delete this path">
+                🗑️
+              </button>
             </div>
-            <h1 className={styles.pathTitle}>{path.subject} Learning Path</h1>
-            <div className={styles.heroMeta}>
-              <span className="badge badge-blue">
-                {path.skillLevel?.charAt(0).toUpperCase() + path.skillLevel?.slice(1)}
-              </span>
-              <span className="badge badge-purple">×{multiplier} multiplier</span>
-              <span className="badge badge-gold">{path.hoursPerWeek} hrs/week</span>
-              {path.isOverloaded && <span className="badge badge-danger">⚠️ Overloaded</span>}
+            <h1 className={styles.pathTitle}>
+              {path.subject} RoadMap
+            </h1>
+            
+            {/* GOAL SWITCHER */}
+            <div className={styles.pathSwitcher}>
+              <span className={styles.switcherLabel}>My Goals:</span>
+              <div className={styles.switcherList}>
+                {paths.map(p => (
+                  <button 
+                    key={p._id} 
+                    className={`${styles.switcherTab} ${p._id === activePathId ? styles.switcherTabActive : ''}`}
+                    onClick={() => setActivePathId(p._id)}
+                  >
+                    {p.subject}
+                  </button>
+                ))}
+                <button className={styles.addPathBtn} onClick={() => navigate('/onboarding')}>
+                  + New Goal
+                </button>
+              </div>
             </div>
           </div>
           <div className={styles.heroStats}>
             {[
+              { label: 'Current Week', val: `Week ${currentWeek}`, icon: '📍' },
               { label: 'Total Weeks', val: path.totalWeeks, icon: '🗓' },
               { label: 'Total Hours', val: totalHours, icon: '⏱' },
-              { label: 'Modules', val: totalModules, icon: '📦' },
               { label: 'Completed', val: completedCount, icon: '✅' },
             ].map(s => (
               <div key={s.label} className={styles.heroStat}>
@@ -160,9 +253,15 @@ export default function Dashboard() {
                 <p>You're operating at an {workloadPercent}% workload capacity</p>
               </div>
               <div className={styles.advisorySuggestions}>
-                <strong>To complete everything:</strong>
-                <p>• Study {requiredWeekly} hrs/week</p>
-                <p>• OR extend to {requiredWeeks} weeks</p>
+                <strong>Recommended Decisions:</strong>
+                <div className={styles.suggestionActions}>
+                  <button onClick={() => handleAdjustPath(Math.ceil(deficit/path.deadlineWeeks))} className={styles.suggestBtn}>
+                    ⚡️ Add {Math.ceil(deficit/path.deadlineWeeks)}h/week to fit everything
+                  </button>
+                  <button onClick={() => handleAdjustPath(0, Math.ceil(deficit/path.hoursPerWeek))} className={styles.suggestBtn}>
+                    🗓 Extend by {Math.ceil(deficit/path.hoursPerWeek)} weeks
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -236,6 +335,7 @@ export default function Dashboard() {
                       key={mod._id || mod.moduleId || i}
                       module={mod}
                       index={i}
+                      currentWeek={currentWeek}
                       onToggleComplete={handleToggleComplete}
                     />
                   ))}
@@ -305,6 +405,7 @@ export default function Dashboard() {
                     key={mod._id || mod.moduleId || i}
                     module={mod}
                     index={i}
+                    currentWeek={currentWeek}
                     onToggleComplete={handleToggleComplete}
                   />
                 ))}

@@ -6,24 +6,26 @@ const PLATFORM_META = {
   Coursera: { icon: '🎓', color: '#0056d3', label: 'Coursera' },
 }
 
-export default function ModuleCard({ module, index, onToggleComplete }) {
+export default function ModuleCard({ module, index, currentWeek, onToggleComplete }) {
   const [expanded, setExpanded] = useState(false)
 
   const platform = PLATFORM_META[module.resource?.platform] || { icon: '🔗', color: '#4f8ef7', label: 'Resource' }
 
-  const systemCompletion = typeof module.completion === 'number' ? module.completion : 100
   let sysStatusText = '⏳ Pending'
   let statusClass = styles.statusPending
   
+  const isStarted = currentWeek >= module.weekStart
+  const isPast = currentWeek > module.weekEnd
+
   if (module.completed) {
     sysStatusText = '✅ Done'
     statusClass = styles.statusDone
-  } else if (systemCompletion < 100 && systemCompletion >= 70) {
-    sysStatusText = 'In Progress'
-    statusClass = styles.statusWarning
-  } else if (systemCompletion < 70) {
-    sysStatusText = 'At Risk'
+  } else if (isPast) {
+    sysStatusText = '🚨 Delayed'
     statusClass = styles.statusRisk
+  } else if (isStarted) {
+    sysStatusText = '🚀 Active'
+    statusClass = styles.statusActive
   }
 
   return (

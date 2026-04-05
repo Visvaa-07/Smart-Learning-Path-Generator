@@ -12,6 +12,22 @@ export function AuthProvider({ children }) {
       return null
     }
   })
+  const [loading, setLoading] = useState(true)
+
+  React.useEffect(() => {
+    const verifyUser = async () => {
+      if (token) {
+        try {
+          const { data } = await api.get('/auth/verify')
+          setUser(data.user)
+        } catch (err) {
+          logout()
+        }
+      }
+      setLoading(false)
+    }
+    verifyUser()
+  }, [])
 
   const login = async (email, password) => {
     const { data } = await api.post('/auth/login', { email, password })
@@ -39,7 +55,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ token, user, login, register, logout }}>
+    <AuthContext.Provider value={{ token, user, login, register, logout, loading }}>
       {children}
     </AuthContext.Provider>
   )
