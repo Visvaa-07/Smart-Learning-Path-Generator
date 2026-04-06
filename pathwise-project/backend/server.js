@@ -32,6 +32,11 @@ app.use(cors({
 }))
 app.use(express.json())
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({ status: 'OK', message: 'Welcome to the PathWise API' })
+})
+
 // Routes
 app.use('/api/auth', require('./routes/auth'))
 app.use('/api/subjects', require('./routes/subjects'))
