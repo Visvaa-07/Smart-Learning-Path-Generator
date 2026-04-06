@@ -1,7 +1,16 @@
 import axios from 'axios'
 
+// Use env variable if set, otherwise detect environment automatically
+const getBaseURL = () => {
+  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+    return 'https://smart-learning-path-generator.vercel.app/api'
+  }
+  return '/api'
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: getBaseURL(),
 })
 
 // Attach JWT token to every request
