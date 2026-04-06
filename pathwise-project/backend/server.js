@@ -14,6 +14,8 @@ connectDB()
 // Allowed origins: prioritize Environment Variable, fallback to local dev
 const allowedOrigins = [
   process.env.FRONTEND_URL,
+  'https://smart-learning-path-generator.vercel.app', 
+  'https://smart-learning-path-generator.vercel.app/',
   'http://localhost:5173',
   'http://localhost:3000',
 ].filter(Boolean) // Remove any undefined/null values
