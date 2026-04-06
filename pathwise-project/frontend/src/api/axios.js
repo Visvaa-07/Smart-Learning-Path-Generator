@@ -2,11 +2,11 @@ import axios from 'axios'
 
 // Detect correct backend URL
 const getBaseURL = () => {
-  // In production (not localhost), always use the deployed backend
-  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
-    return 'https://smart-learning-path-generator.vercel.app/api'
+  // Use environment variable if available (e.g. on Vercel)
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL
   }
-  // In local dev, use Vite proxy
+  // In local dev without env var, use Vite proxy
   return '/api'
 }
 
