@@ -54,8 +54,8 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000
 
-// Only start the server if not running on Vercel
-if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+// Only start the server if NOT running on Vercel
+if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`\n🚀 PathWise API running on http://localhost:${PORT}`)
     console.log(`📦 MongoDB: ${process.env.MONGO_URI}`)
@@ -68,6 +68,7 @@ if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
     console.log(`   PUT  /api/progress/:moduleId\n`)
   })
 }
+
 
 module.exports = app
 
