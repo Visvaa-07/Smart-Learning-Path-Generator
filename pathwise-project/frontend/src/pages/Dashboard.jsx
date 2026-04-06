@@ -20,6 +20,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('Overview')
   const [updatingId, setUpdatingId] = useState(null)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -69,14 +70,14 @@ export default function Dashboard() {
     }
   }
 
-  const handleDeletePath = async () => {
+  const handleDeletePath = () => {
+    setShowDeleteModal(true)
+  }
+
+  const confirmDelete = async () => {
     const currentPathId = path?._id
     if (!currentPathId) return
-    
-    // Using window.confirm but with a fallback for automated tests
-    const confirmed = window.confirm ? window.confirm('Are you sure you want to delete this learning path?') : true
-    if (!confirmed) return
-
+    setShowDeleteModal(false)
     try {
       setLoading(true)
       console.log('[FRONTEND] Deleting path:', currentPathId);
@@ -181,6 +182,48 @@ export default function Dashboard() {
   return (
     <div className={styles.page}>
       <div className={styles.bgGrid} />
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <div style={{
+            background: '#141929', border: '1px solid #1e2740',
+            borderRadius: 16, padding: '2rem', maxWidth: 400, width: '90%',
+            textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
+          }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>🗑️</div>
+            <h3 style={{ color: '#e8eaf2', margin: '0 0 8px', fontSize: '1.2rem' }}>Delete Learning Path?</h3>
+            <p style={{ color: '#5a6380', margin: '0 0 24px', fontSize: '0.9rem' }}>
+              <strong style={{ color: '#f59e0b' }}>{path?.subject}</strong> and all its progress will be permanently removed.
+            </p>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                style={{
+                  padding: '10px 24px', borderRadius: 8, border: '1px solid #1e2740',
+                  background: 'transparent', color: '#e8eaf2', cursor: 'pointer', fontSize: '0.9rem'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                style={{
+                  padding: '10px 24px', borderRadius: 8, border: 'none',
+                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                  color: '#fff', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600
+                }}
+              >
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Navbar onNewPath={() => navigate('/onboarding')} />
 

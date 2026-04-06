@@ -11,21 +11,32 @@ const app = express()
 // Connect to MongoDB
 connectDB()
 
-// Middleware
-app.use(cors({
-  origin: 'https://smart-learning-path-generator-x74b.vercel.app',
+// Allowed origins: production URL + local dev
+const allowedOrigins = [
+  process.env.FRONTEND_URL || 'https://smart-learning-path-generator-x74b.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+]
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. Postman, curl)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true)
+    } else {
+      callback(new Error(`CORS blocked: ${origin}`))
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
-}))
+}
+
+// Middleware
+app.use(cors(corsOptions))
 
 // Handle preflight OPTIONS requests explicitly
-app.options('*', cors({
-  origin: 'https://smart-learning-path-generator-x74b.vercel.app',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-}))
+app.options('*', cors(corsOptions))
 
 app.use(express.json())
 
