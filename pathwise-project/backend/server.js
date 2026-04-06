@@ -14,16 +14,17 @@ connectDB()
 // Allowed origins: prioritize Environment Variable, fallback to local dev
 const allowedOrigins = [
   process.env.FRONTEND_URL,
-  'https://smart-learning-path-generator.vercel.app', 
-  'https://smart-learning-path-generator.vercel.app/',
   'http://localhost:5173',
   'http://localhost:3000',
 ].filter(Boolean) // Remove any undefined/null values
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (e.g. Postman, curl)
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Normalizing origins to handle trailing slashes consistently
+    const normalizedOrigins = allowedOrigins.map(o => o.replace(/\/$/, ''))
+    const normalizedOrigin = origin ? origin.replace(/\/$/, '') : null
+
+    if (!origin || normalizedOrigins.includes(normalizedOrigin)) {
       callback(null, true)
     } else {
       callback(new Error(`CORS blocked: ${origin}`))
