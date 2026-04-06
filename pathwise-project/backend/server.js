@@ -3,9 +3,6 @@ const cors = require('cors')
 const dotenv = require('dotenv')
 const dns = require('dns')
 
-// Force DNS to use Google DNS for reliable Atlas SRV resolution
-dns.setServers(['8.8.8.8'])
-
 const connectDB = require('./config/db')
 
 dotenv.config()
