@@ -68,7 +68,7 @@ const PORT = process.env.PORT || 5000
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`\n🚀 PathWise API running on http://localhost:${PORT}`)
-    console.log(`📦 MongoDB: ${process.env.MONGO_URI}`)
+    console.log(`📦 MongoDB: Connection string is masked for security.`)
     console.log(`\n📋 Available routes:`)
     console.log(`   POST /api/auth/register`)
     console.log(`   POST /api/auth/login`)
